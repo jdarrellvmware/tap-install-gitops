@@ -10,7 +10,7 @@ spec:
   serviceAccountName: tap-install-gitops-sa
   fetch:
   - git:
-      url: https://github.com/alexbarbato/declarative-tap.git
+      url: https://github.com/jdarrellvmware/tap-install-gitops.git
       ref: origin/main
       secretRef:
         name: tap-install-gitops-github
@@ -19,7 +19,7 @@ spec:
       paths:
       - config
       - config-full
-      - additional/external-dns
+      #- additional/external-dns
       valuesFrom:
       - configMapRef:
           name: tap-install-gitops
