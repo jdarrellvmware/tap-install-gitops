@@ -20,7 +20,7 @@ to every cluster. These tools are part of the TAP prerequisites.
 1. Make sure [Cluster Essentials for VMware Tanzu is deployed to your cluster](https://docs.vmware.com/en/Tanzu-Application-Platform/1.0/tap/GUID-install-general.html#install-cluster-essentials-for-vmware-tanzu-2).
 
 1. Create new file `tap-install-config.yml` in `gitops`, reusing content from [`tap-install-config.yml.tpl`](gitops/tap-install-config.yml.tpl).
-Edit this file accordingly:
+Edit this file accordingly   :
 
 1. Do the same with [`tap-install-secrets.yml.tpl`](gitops/tap-install-secrets.yml.tpl)
 by creating `tap-install-secrets.yml`:
