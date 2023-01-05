@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: build-service-version
-  namespace: build-service
-data:
-  version: 1.4.2
