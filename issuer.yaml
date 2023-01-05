@@ -1,0 +1,35 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-route53
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: djonesvmware@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt-route53-secret
+    solvers:
+    - selector:
+        dnsZones:
+          - "commandtheinstall.com"
+      dns01:
+        route53:
+          region: us-east-1
+          hostedZoneID: Z0939545FHEQWWENEPDJ
+          #role: arn:aws:iam::233028603830:role/lets-encrypt-cluster-issuer-role
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-http
+spec:
+  acme:
+    email: djonesvmware@gmail.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-http-secret
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+      selector: {}

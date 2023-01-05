@@ -3,8 +3,6 @@
 #@overlay/match-child-defaults missing_ok=True
 ---
 tap:
-  #!! devNamespace: dev-tap
-
   domains:
     learningCenter: learningcenter.tap.tanzu.corp
     knative: apps.tap.tanzu.corp
