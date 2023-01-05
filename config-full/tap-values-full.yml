@@ -1,6 +1,9 @@
 #@ load("@ytt:data", "data")
 #@ load("@ytt:yaml", "yaml")
 
+#!
+#! This file is your 'tap-values.yaml'
+#!
 ---
 #@ def config():
 profile: full
@@ -11,11 +14,26 @@ buildservice:
   kp_default_repository_password: #@ data.values.tap.credentials.registry.password
   tanzunet_username: #@ data.values.tap.credentials.tanzuNet.username
   tanzunet_password: #@ data.values.tap.credentials.tanzuNet.password
-  descriptor_name: "tap-1.1-lite"
+  descriptor_name: "full"
   enable_automatic_dependency_updates: true
 
-supply_chain: basic
+#! valid options are 'basic', 'testing', and 'testing_scanning'
+supply_chain: testing_scanning
 ootb_supply_chain_basic:
+  registry:
+    server: #@ data.values.tap.registry.host
+    repository: #@ data.values.tap.registry.repositories.ootbSupplyChain
+  gitops:
+    ssh_secret: ""
+
+ootb_supply_chain_testing:
+  registry:
+    server: #@ data.values.tap.registry.host
+    repository: #@ data.values.tap.registry.repositories.ootbSupplyChain
+  gitops:
+    ssh_secret: ""
+
+ootb_supply_chain_testing_scanning:
   registry:
     server: #@ data.values.tap.registry.host
     repository: #@ data.values.tap.registry.repositories.ootbSupplyChain
@@ -26,10 +44,24 @@ learningcenter:
   ingressDomain: #@ data.values.tap.domains.learningCenter
 
 tap_gui:
-  service_type: ClusterIP
+  service_type: LoadBalancer
   ingressEnabled: "true"
   ingressDomain: #@ data.values.tap.domains.main
   app_config:
+
+    #@ if "metadata_svc_account_token" in data.values.tap.credentials:
+    #! Set security metadata access for TAP GUI.
+    #! ref: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.2/tap/GUID-tap-gui-plugins-scc-tap-gui.html#enable-cve-scan-results-2
+    proxy:
+      /metadata-store:
+        target: https://metadata-store-app.metadata-store:8443/api/v1
+        changeOrigin: true
+        secure: false
+        headers:
+          Authorization: #@ "Bearer {}".format(data.values.tap.credentials.metadata_svc_account_token)
+          X-Custom-Source: project-star
+    #@ end
+
     app:
       baseUrl: #@ "http://{}".format(data.values.tap.domains.tapGui)
     integrations:
@@ -59,30 +91,42 @@ tap_gui:
             password: #@ data.values.tap.credentials.backstage.database.password
             ssl: {rejectUnauthorized: true}
       #@ end
-    #@ if "github" in data.values.tap.credentials and "clientId" in data.values.tap.credentials.github and "clientSecret" in data.values.tap.credentials.github:
+    #@ if "okta" in data.values.tap.credentials and "clientId" in data.values.tap.credentials.okta and "clientSecret" in data.values.tap.credentials.okta:
     auth:
+      allowGuestAccess: true
       environment: development
       providers:
-        github:
+        okta:
           development:
-            clientId: #@ data.values.tap.credentials.github.clientId
-            clientSecret: #@ data.values.tap.credentials.github.clientSecret
+            clientId:     #@ data.values.tap.credentials.okta.clientId
+            clientSecret: #@ data.values.tap.credentials.okta.clientSecret
+            audience:     #@ data.values.tap.credentials.okta.audience
     #@ end
 
 metadata_store:
+  ns_for_export_app_cert: "*"
   app_service_type: LoadBalancer
+
+
+accelerator:
+  ingress:
+    include: true
+  domain: #@ data.values.tap.domains.main
  
-grype:
-  namespace: #@ data.values.tap.devNamespace
-  targetImagePullSecret: "tap-registry"
+#!grype:
+#!  namespace: #@ data.values.tap.devNamespaces[0]
+#!  targetImagePullSecret: "tap-registry"
 
 contour:
   envoy:
     service:
       type: LoadBalancer
+      annotations:
+        external-dns.alpha.kubernetes.io/hostname: #@ "*.{}".format(data.values.tap.domains.main)
 
 cnrs:
   domain_name: #@ data.values.tap.domains.knative
+  #! domain_template: "{{.Name}}.{{.Domain}}"
 #@ end
 ---
 apiVersion: v1

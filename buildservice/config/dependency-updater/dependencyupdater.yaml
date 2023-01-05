@@ -1,0 +1,54 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tanzunetdependencyupdaters.buildservice.tanzu.vmware.com
+spec:
+  group: buildservice.tanzu.vmware.com
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+          properties:
+            spec:
+              type: object
+              properties:
+                checkEvery:
+                  type: string
+                  default: "1m"
+                productSlug:
+                  type: string
+                  default: "tbs-dependencies"
+                descriptorName:
+                  type: string
+                  default: "full"
+                serviceAccountName:
+                  default: "default"
+                  type: string
+                descriptorVersion:
+                  type: string
+      subresources:
+        status: { }
+      additionalPrinterColumns:
+        - name: DescriptorVersion
+          type: string
+          jsonPath: ".status.latestDescriptorVersion"
+        - name: LatestImportedDescriptorName
+          type: string
+          jsonPath: ".status.latestDescriptorName"
+        - name: Ready
+          type: string
+          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
+  names:
+    kind: TanzuNetDependencyUpdater
+    singular: tanzunetdependencyupdater
+    plural: tanzunetdependencyupdaters
+    shortNames:
+      - dependencyupdater
+      - dependencyupdaters
+    categories:
+      - buildservice
+  scope: Namespaced

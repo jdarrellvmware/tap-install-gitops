@@ -1,0 +1,38 @@
+#@ load("/values.star", "values")
+#@ load("@ytt:base64", "base64")
+#@ load("@ytt:json", "json")
+
+#@ if values.tanzunet_username and values.tanzunet_password:
+#@ tanzunet_auth = base64.encode("{}:{}".format(values.tanzunet_username, values.tanzunet_password))
+#@ tanzunet_creds = {"username": values.tanzunet_username, "password": values.tanzunet_password, "auth": tanzunet_auth}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dependency-updater-secret
+  namespace: build-service
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: #@ base64.encode(json.encode({"auths": {"registry.tanzu.vmware.com": tanzunet_creds}}))
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dependency-updater-serviceaccount
+  namespace: build-service
+secrets:
+  - name: dependency-updater-secret
+---
+apiVersion: buildservice.tanzu.vmware.com/v1alpha1
+kind: TanzuNetDependencyUpdater
+metadata:
+  name: dependency-updater
+  namespace: build-service
+spec:
+  serviceAccountName: dependency-updater-serviceaccount
+  productSlug: tbs-dependencies
+  descriptorName: #@ values.descriptor_name
+  checkEvery: 1m
+  #@ if/end not values.enable_automatic_dependency_updates:
+  descriptorVersion: #@ values.descriptor_version
+#@ end
