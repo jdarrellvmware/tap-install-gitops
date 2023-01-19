@@ -38,6 +38,8 @@ You are now ready to apply the GitOps configuration:
 ```shell
 kapp deploy -a tap-install-gitops -f <(ytt -f gitops)
 ```
+## Remove
+kapp delete -a tap-install-gitops
 
 At this point, kapp-controller will monitor the Git repository: any updates
 (commits) will be applied to your cluster, without having to run any commands.
@@ -65,3 +67,11 @@ Feel free to open issues & send PR.
 Copyright &copy; 2022 [VMware, Inc. or its affiliates](https://vmware.com).
 
 This project is licensed under the [Apache Software License version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+
+
+
+
+kubectl get service envoy -n tanzu-system-ingress
+kubectl get service envoy -n tanzu-system-ingresskubectl get service envoy -n tanzu-system-ingress
+kubectl get service envoy -n tanzu-system-ingress
